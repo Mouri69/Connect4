@@ -4,6 +4,8 @@ const board = document.getElementById('game-board');
 const message = document.getElementById('message');
 const restartButton = document.getElementById('restart-button');
 const confetti = document.getElementById('confetti');
+const vsAIButton = document.getElementById('vs-ai-button');
+const vsPlayerButton = document.getElementById('vs-player-button');
 
 const rows = 6;
 const cols = 7;
@@ -32,7 +34,7 @@ function createBoard() {
 
 // Handle cell clicks
 function handleCellClick(event) {
-    if (gameOver) return; // Stop if the game is over
+    if (gameOver || (currentPlayer === 'yellow' && isAIEnabled)) return; // Stop if the game is over or it's AI's turn
 
     const col = parseInt(event.target.dataset.col);
 
@@ -69,6 +71,7 @@ function handleCellClick(event) {
 
             // If AI is enabled and it's AI's turn, make AI move
             if (isAIEnabled && currentPlayer === 'yellow') {
+                console.log("AI's turn");
                 setTimeout(aiMove, 500); // Delay AI move to feel natural
             }
             break;
@@ -152,9 +155,63 @@ function aiMove() {
             validColumns.push(col);
         }
     }
+
+    if (validColumns.length === 0) {
+        console.log("AI move aborted: No valid columns.");
+        return; // No valid columns to choose from
+    }
+
     const randomCol = validColumns[Math.floor(Math.random() * validColumns.length)];
     console.log(`AI selects column ${randomCol}`);
-    handleCellClick({target: board.querySelector(`.cell[data-col='${randomCol}']`)});
+
+    // Find the lowest available row in the chosen column
+    let row = -1;
+    for (let r = rows - 1; r >= 0; r--) {
+        if (gameBoard[r][randomCol] === null) {
+            row = r;
+            break;
+        }
+    }
+
+    if (row === -1) {
+        console.log("AI move aborted: Column is full.");
+        return; // Column is full
+    }
+
+    // Update the gameBoard array
+    gameBoard[row][randomCol] = currentPlayer;
+
+    // Update the visual representation
+    const cell = board.querySelector(`.cell[data-row='${row}'][data-col='${randomCol}']`);
+    if (cell) {
+        cell.classList.add(currentPlayer);
+    } else {
+        console.log(`Cell not found for AI move at row ${row}, col ${randomCol}`);
+    }
+
+    console.log(`AI placed at row ${row}, col ${randomCol}`);
+
+    // Check for win or draw
+    if (checkWin(row, randomCol)) {
+        message.textContent = `Player ${currentPlayer.toUpperCase()} wins!`;
+        updateScore();
+        gameOver = true; // Set the game as over
+        console.log(`Game over: Player ${currentPlayer} wins.`);
+        board.style.pointerEvents = 'none'; // Disable further clicks
+        showConfetti(); // Show confetti
+        return;
+    }
+
+    if (isBoardFull()) {
+        message.textContent = "It's a draw!";
+        console.log("The game ended in a draw.");
+        gameOver = true; // Set the game as over for a draw
+        return;
+    }
+
+    // Switch players
+    currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+    message.textContent = `Player ${currentPlayer.toUpperCase()}'s turn`;
 }
 
 // Show confetti animation
@@ -183,6 +240,27 @@ restartButton.addEventListener('click', () => {
     createBoard();
     console.log("Game restarted.");
 });
+
+// Set game mode
+function setGameMode(mode) {
+    if (mode === 'AI') {
+        isAIEnabled = true;
+        console.log("Game mode set to Player vs AI.");
+    } else if (mode === 'Player') {
+        isAIEnabled = false;
+        console.log("Game mode set to Player vs Player.");
+    }
+    gameBoard = Array(rows).fill().map(() => Array(cols).fill(null));
+    currentPlayer = 'red';
+    message.textContent = `Player ${currentPlayer.toUpperCase()}'s turn`;
+    board.style.pointerEvents = 'auto'; // Enable clicks
+    gameOver = false;
+    createBoard();
+}
+
+// Event listeners for game mode buttons
+vsAIButton.addEventListener('click', () => setGameMode('AI'));
+vsPlayerButton.addEventListener('click', () => setGameMode('Player'));
 
 // Set initial game state
 createBoard();
