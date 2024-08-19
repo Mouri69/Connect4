@@ -218,7 +218,7 @@ function aiMove() {
 function showConfetti() {
     confetti.style.display = 'flex'; // Show confetti
     confetti.innerHTML = '';
-    for (let i = 0; i < 13; i++) {
+    for (let i = 0; i < 20; i++) {
         const confettiPiece = document.createElement('div');
         confettiPiece.classList.add('confetti-piece');
         confettiPiece.style.left = `${Math.random() * 100}%`;
