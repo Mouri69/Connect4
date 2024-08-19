@@ -3,6 +3,7 @@
 const board = document.getElementById('game-board');
 const message = document.getElementById('message');
 const restartButton = document.getElementById('restart-button');
+const confetti = document.getElementById('confetti');
 
 const rows = 6;
 const cols = 7;
@@ -50,6 +51,8 @@ function handleCellClick(event) {
                 gameOver = true; // Set the game as over
                 console.log(`Game over: Player ${currentPlayer} wins.`);
                 board.style.pointerEvents = 'none'; // Disable further clicks
+                
+                showConfetti(); // Show confetti
                 return;
             }
 
@@ -72,9 +75,6 @@ function handleCellClick(event) {
         }
     }
 }
-
-// Check for a win
-// script.js
 
 // Check for a win
 function checkWin(row, col) {
@@ -157,35 +157,32 @@ function aiMove() {
     handleCellClick({target: board.querySelector(`.cell[data-col='${randomCol}']`)});
 }
 
-// Restart the game
+// Show confetti animation
+function showConfetti() {
+    confetti.style.display = 'flex'; // Show confetti
+    confetti.innerHTML = '';
+    for (let i = 0; i < 13; i++) {
+        const confettiPiece = document.createElement('div');
+        confettiPiece.classList.add('confetti-piece');
+        confettiPiece.style.left = `${Math.random() * 100}%`;
+        confettiPiece.style.animation = `makeItRain ${Math.random() * 3 + 2}s linear`;
+        confetti.appendChild(confettiPiece);
+    }
+    setTimeout(() => {
+        confetti.style.display = 'none'; // Hide confetti after animation
+    }, 4000); // Match duration with animation duration
+}
+
+// Restart game
 restartButton.addEventListener('click', () => {
     gameBoard = Array(rows).fill().map(() => Array(cols).fill(null));
     currentPlayer = 'red';
+    message.textContent = `Player ${currentPlayer.toUpperCase()}'s turn`;
+    board.style.pointerEvents = 'auto'; // Enable clicks
     gameOver = false;
-    board.style.pointerEvents = 'auto';
     createBoard();
     console.log("Game restarted.");
 });
 
-// Mode selection
-document.getElementById('1v1-mode').addEventListener('click', () => {
-    isAIEnabled = false;
-    startGame();
-});
-
-document.getElementById('ai-mode').addEventListener('click', () => {
-    isAIEnabled = true;
-    startGame();
-});
-
-function startGame() {
-    gameBoard = Array(rows).fill().map(() => Array(cols).fill(null));
-    currentPlayer = 'red';
-    gameOver = false;
-    board.style.pointerEvents = 'auto';
-    createBoard();
-    console.log("New game started.");
-}
-
-// Initialize the game
+// Set initial game state
 createBoard();
