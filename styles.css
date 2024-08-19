@@ -79,6 +79,10 @@ body {
     background-color: yellow;
 }
 
+.cell.winning{
+    background-color:green; /* Winning disc color */
+}
+
 #message {
     font-size: 20px;
     margin: 15px 0;

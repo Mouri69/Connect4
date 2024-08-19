@@ -74,6 +74,9 @@ function handleCellClick(event) {
 }
 
 // Check for a win
+// script.js
+
+// Check for a win
 function checkWin(row, col) {
     console.log(`Checking win for ${currentPlayer} at row ${row}, col ${col}`);
     return checkDirection(row, col, 1, 0) || // Horizontal
@@ -84,13 +87,13 @@ function checkWin(row, col) {
 
 function checkDirection(row, col, rowDir, colDir) {
     let count = 1; // Start with the current piece
-
-    console.log(`Checking direction (${rowDir}, ${colDir}) from (${row}, ${col})`);
-
-    // Count in the positive direction
+    let winningCells = [{ row, col }]; // Include the initial cell
     let r = row + rowDir;
     let c = col + colDir;
+
+    // Count in the positive direction
     while (r >= 0 && r < rows && c >= 0 && c < cols && gameBoard[r][c] === currentPlayer) {
+        winningCells.push({ row: r, col: c });
         count++;
         console.log(`Positive direction: counting (${r}, ${c}) - count: ${count}`);
         r += rowDir;
@@ -101,6 +104,7 @@ function checkDirection(row, col, rowDir, colDir) {
     r = row - rowDir;
     c = col - colDir;
     while (r >= 0 && r < rows && c >= 0 && c < cols && gameBoard[r][c] === currentPlayer) {
+        winningCells.push({ row: r, col: c });
         count++;
         console.log(`Negative direction: counting (${r}, ${c}) - count: ${count}`);
         r -= rowDir;
@@ -108,8 +112,17 @@ function checkDirection(row, col, rowDir, colDir) {
     }
 
     console.log(`Total count in direction (${rowDir}, ${colDir}): ${count}`);
-    
-    return count >= 4;
+
+    if (count >= 4) {
+        // Highlight winning cells
+        winningCells.forEach(cell => {
+            const cellElement = board.querySelector(`.cell[data-row='${cell.row}'][data-col='${cell.col}']`);
+            cellElement.classList.add('winning');
+        });
+        return true;
+    }
+
+    return false;
 }
 
 // Check if the board is full
