@@ -11,6 +11,7 @@ let gameBoard = Array(rows).fill().map(() => Array(cols).fill(null));
 let redScore = 0;
 let yellowScore = 0;
 let isAIEnabled = false;
+let gameOver = false;
 
 // Initialize the board
 function createBoard() {
@@ -30,7 +31,9 @@ function createBoard() {
 
 // Handle cell clicks
 function handleCellClick(event) {
-    const col = event.target.dataset.col;
+    if (gameOver) return; // Stop if the game is over
+
+    const col = parseInt(event.target.dataset.col);
 
     // Find the first empty cell in the clicked column
     for (let row = rows - 1; row >= 0; row--) {
@@ -39,15 +42,21 @@ function handleCellClick(event) {
             const cell = board.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
             cell.classList.add(currentPlayer);
 
+            console.log(`Player ${currentPlayer} placed at row ${row}, col ${col}`);
+
             if (checkWin(row, col)) {
                 message.textContent = `Player ${currentPlayer.toUpperCase()} wins!`;
                 updateScore();
+                gameOver = true; // Set the game as over
+                console.log(`Game over: Player ${currentPlayer} wins.`);
                 board.style.pointerEvents = 'none'; // Disable further clicks
                 return;
             }
 
             if (isBoardFull()) {
                 message.textContent = "It's a draw!";
+                console.log("The game ended in a draw.");
+                gameOver = true; // Set the game as over for a draw
                 return;
             }
 
@@ -73,26 +82,34 @@ function checkWin(row, col) {
            checkDirection(row, col, 1, -1);  // Diagonal \
 }
 
-// Check a specific direction for 4 in a row
 function checkDirection(row, col, rowDir, colDir) {
-    let count = 1;
-    count += countCells(row, col, rowDir, colDir);
-    count += countCells(row, col, -rowDir, -colDir);
-    console.log(`Direction (${rowDir}, ${colDir}) count: ${count}`);
-    return count >= 4;
-}
+    let count = 1; // Start with the current piece
 
-// Count consecutive cells in a direction
-function countCells(row, col, rowDir, colDir) {
+    console.log(`Checking direction (${rowDir}, ${colDir}) from (${row}, ${col})`);
+
+    // Count in the positive direction
     let r = row + rowDir;
     let c = col + colDir;
-    let count = 0;
     while (r >= 0 && r < rows && c >= 0 && c < cols && gameBoard[r][c] === currentPlayer) {
         count++;
+        console.log(`Positive direction: counting (${r}, ${c}) - count: ${count}`);
         r += rowDir;
         c += colDir;
     }
-    return count;
+
+    // Count in the negative direction
+    r = row - rowDir;
+    c = col - colDir;
+    while (r >= 0 && r < rows && c >= 0 && c < cols && gameBoard[r][c] === currentPlayer) {
+        count++;
+        console.log(`Negative direction: counting (${r}, ${c}) - count: ${count}`);
+        r -= rowDir;
+        c -= colDir;
+    }
+
+    console.log(`Total count in direction (${rowDir}, ${colDir}): ${count}`);
+    
+    return count >= 4;
 }
 
 // Check if the board is full
@@ -109,10 +126,13 @@ function updateScore() {
         yellowScore++;
         document.getElementById('yellow-score').textContent = `Yellow: ${yellowScore}`;
     }
+    console.log(`Updated score - Red: ${redScore}, Yellow: ${yellowScore}`);
 }
 
 // Simple AI move
 function aiMove() {
+    if (gameOver) return; // Stop if the game is over
+
     let validColumns = [];
     for (let col = 0; col < cols; col++) {
         if (gameBoard[0][col] === null) {
@@ -120,6 +140,7 @@ function aiMove() {
         }
     }
     const randomCol = validColumns[Math.floor(Math.random() * validColumns.length)];
+    console.log(`AI selects column ${randomCol}`);
     handleCellClick({target: board.querySelector(`.cell[data-col='${randomCol}']`)});
 }
 
@@ -127,8 +148,10 @@ function aiMove() {
 restartButton.addEventListener('click', () => {
     gameBoard = Array(rows).fill().map(() => Array(cols).fill(null));
     currentPlayer = 'red';
+    gameOver = false;
     board.style.pointerEvents = 'auto';
     createBoard();
+    console.log("Game restarted.");
 });
 
 // Mode selection
@@ -145,8 +168,10 @@ document.getElementById('ai-mode').addEventListener('click', () => {
 function startGame() {
     gameBoard = Array(rows).fill().map(() => Array(cols).fill(null));
     currentPlayer = 'red';
+    gameOver = false;
     board.style.pointerEvents = 'auto';
     createBoard();
+    console.log("New game started.");
 }
 
 // Initialize the game
