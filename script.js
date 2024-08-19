@@ -66,6 +66,7 @@ function handleCellClick(event) {
 
 // Check for a win
 function checkWin(row, col) {
+    console.log(`Checking win for ${currentPlayer} at row ${row}, col ${col}`);
     return checkDirection(row, col, 1, 0) || // Horizontal
            checkDirection(row, col, 0, 1) || // Vertical
            checkDirection(row, col, 1, 1) || // Diagonal /
@@ -77,6 +78,7 @@ function checkDirection(row, col, rowDir, colDir) {
     let count = 1;
     count += countCells(row, col, rowDir, colDir);
     count += countCells(row, col, -rowDir, -colDir);
+    console.log(`Direction (${rowDir}, ${colDir}) count: ${count}`);
     return count >= 4;
 }
 
@@ -95,7 +97,7 @@ function countCells(row, col, rowDir, colDir) {
 
 // Check if the board is full
 function isBoardFull() {
-    return gameBoard.every(row => row.every(cell => cell));
+    return gameBoard[0].every(cell => cell !== null);
 }
 
 // Update score based on the winning player
